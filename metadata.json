@@ -1,0 +1,6 @@
+{
+  "name": "Pixel Launcher",
+  "description": "Pixel-perfect Android launcher with Material You theme engine, Dynamic Notch Pill for live activities, bottom search bar customization, and third-party icon pack support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
