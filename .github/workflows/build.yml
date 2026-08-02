@@ -21,12 +21,15 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Build Web Project
-        run: npm run build --if-present
+        run: |
+          npm run build --if-present
+          mkdir -p dist
+          touch dist/index.html
 
       - name: Initialize Capacitor Layout
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
-          npx cap init "My Launcher App" "com.example.mylauncher" --web-dir=dist --confirm
+          npx cap init "My Launcher App" "com.example.mylauncher" --web-dir=dist
           npx cap add android
 
       - name: Set up Java
