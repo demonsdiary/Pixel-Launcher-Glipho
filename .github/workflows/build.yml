@@ -32,11 +32,15 @@ jobs:
           npx cap init "My Launcher App" "com.example.mylauncher" --web-dir=dist
           npx cap add android
 
-      - name: Convert App into Android Home Launcher
+      - name: Hardcode True Android Launcher Settings
         run: |
           MANIFEST_PATH="android/app/src/main/AndroidManifest.xml"
-          # Inject launcher categories right into the intent-filter block
-          sed -i '/<category android:name="android.intent.category.LAUNCHER" \/>/a \                <category android:name="android.intent.category.HOME" \/>\n                <category android:name="android.intent.category.DEFAULT" \/>' $MANIFEST_PATH
+          
+          # 1. Clear out any default intent filters that treat it like a simple application preview
+          sed -i '/<intent-filter>/,/<\/intent-filter>/d' $MANIFEST_PATH
+          
+          # 2. Re-inject a clean Intent Filter declaring Home, Default, and Launcher statuses
+          sed -i '/<activity/a \            <intent-filter>\n                <action android:name="android.intent.action.MAIN" \/>\n                <category android:name="android.intent.category.LAUNCHER" \/>\n                <category android:name="android.intent.category.HOME" \/>\n                <category android:name="android.intent.category.DEFAULT" \/>\n            <\/intent-filter>' $MANIFEST_PATH
 
       - name: Set up Java 21
         uses: actions/setup-java@v4
