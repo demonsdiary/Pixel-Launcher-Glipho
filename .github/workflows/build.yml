@@ -1,4 +1,4 @@
-name: Generate My Launcher App
+name: Generate Web App APK
 
 on:
   push:
@@ -12,21 +12,40 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Web Project
+        run: npm run build
+
+      - name: Add Android Platform
+        run: |
+          npm install @capacitor/core @capacitor/cli
+          npx cap init "My Launcher App" "com.example.mylauncher" --web-dir=dist
+          npm install @capacitor/android
+          npx cap add android
+          npx cap sync
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-          cache: 'gradle'
 
-      - name: Grant Execute Permission
-        run: chmod +x ./gradlew
-
-      - name: Build APK
-        run: ./gradlew assembleDebug
+      - name: Build APK File
+        run: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
 
       - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
-          name: my-launcher-app
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: web-launcher-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
