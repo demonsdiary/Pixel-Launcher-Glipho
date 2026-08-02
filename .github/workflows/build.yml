@@ -32,15 +32,28 @@ jobs:
           npx cap init "My Launcher App" "com.example.mylauncher" --web-dir=dist
           npx cap add android
 
-      - name: Hardcode True Android Launcher Settings
+      - name: Inject True Android Launcher Configuration
         run: |
-          MANIFEST_PATH="android/app/src/main/AndroidManifest.xml"
+          node -e '
+          const fs = require("fs");
+          const path = "android/app/src/main/AndroidManifest.xml";
+          let content = fs.readFileSync(path, "utf8");
           
-          # 1. Clear out any default intent filters that treat it like a simple application preview
-          sed -i '/<intent-filter>/,/<\/intent-filter>/d' $MANIFEST_PATH
+          // Remove default intent-filters to avoid duplication or parsing conflicts
+          content = content.replace(/<intent-filter>([\s\S]*?)<\/intent-filter>/g, "");
           
-          # 2. Re-inject a clean Intent Filter declaring Home, Default, and Launcher statuses
-          sed -i '/<activity/a \            <intent-filter>\n                <action android:name="android.intent.action.MAIN" \/>\n                <category android:name="android.intent.category.LAUNCHER" \/>\n                <category android:name="android.intent.category.HOME" \/>\n                <category android:name="android.intent.category.DEFAULT" \/>\n            <\/intent-filter>' $MANIFEST_PATH
+          // Inject a valid intent-filter structure directly inside the main activity element
+          const target = "<activity";
+          const injection = `\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n                <category android:name="android.intent.category.HOME" />\n                <category android:name="android.intent.category.DEFAULT" />\n            </intent-filter>`;
+          
+          const index = content.indexOf(target);
+          if (index !== -1) {
+            const insertPos = content.indexOf(">", index) + 1;
+            content = content.slice(0, insertPos) + injection + content.slice(insertPos);
+          }
+          
+          fs.writeFileSync(path, content, "utf8");
+          '
 
       - name: Set up Java 21
         uses: actions/setup-java@v4
